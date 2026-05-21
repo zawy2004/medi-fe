@@ -3,10 +3,13 @@
 <html lang="vi"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartCare HIS - Đăng nhập theo vai trò</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="assets/css/styles.css"/>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -128,7 +131,7 @@
 <span class="material-symbols-outlined text-on-primary text-[32px]" data-icon="medical_services">medical_services</span>
 </div>
 <h1 class="font-headline-lg text-headline-lg text-primary">SmartCare HIS</h1>
-<p class="font-body-md text-on-surface-variant">Hệ thống Thông tin Bệnh viện Toàn diện</p>
+<p class="font-body-md text-on-surface-variant">Chọn vai trò để chuyển tới màn hình phù hợp</p>
 </div>
 <!-- Auth Card -->
 <section class="bg-surface-container-lowest border border-outline-variant p-xl rounded-lg auth-card transition-all duration-500" id="auth-card">
@@ -139,6 +142,24 @@
 <p class="font-body-sm text-on-surface-variant">Vui lòng nhập thông tin tài khoản của bạn</p>
 </div>
 <form class="flex flex-col gap-md" id="login-form">
+<!-- Role selector -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">Vai trò</label>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-sm" id="role-selector">
+<button class="role-card selected border border-primary bg-primary/5 rounded-lg p-3 text-left transition-all" data-role="patient" type="button">
+<div class="font-label-md text-label-md text-primary">Patient</div>
+<div class="font-body-sm text-on-surface-variant">Cổng bệnh nhân</div>
+</button>
+<button class="role-card border border-outline-variant bg-surface rounded-lg p-3 text-left transition-all" data-role="doctor" type="button">
+<div class="font-label-md text-label-md text-on-surface">Doctor</div>
+<div class="font-body-sm text-on-surface-variant">Cổng lâm sàng</div>
+</button>
+<button class="role-card border border-outline-variant bg-surface rounded-lg p-3 text-left transition-all" data-role="admin" type="button">
+<div class="font-label-md text-label-md text-on-surface">Admin</div>
+<div class="font-body-sm text-on-surface-variant">Cổng quản trị</div>
+</button>
+</div>
+</div>
 <!-- Email/Username -->
 <div class="flex flex-col gap-xs">
 <label class="font-label-md text-label-md text-on-surface-variant" for="username">Tên đăng nhập hoặc Email</label>
@@ -230,7 +251,7 @@
 <input class="otp-input w-12 h-14 border border-outline-variant rounded text-center font-headline-md text-headline-md bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none" maxlength="1" type="text"/>
 </div>
 <div class="flex flex-col gap-md">
-<button class="w-full bg-primary text-on-primary py-md rounded font-label-md text-label-md hover:bg-primary/90 transition-colors">
+<button class="w-full bg-primary text-on-primary py-md rounded font-label-md text-label-md hover:bg-primary/90 transition-colors" onclick="verifyAndRedirect()" type="button">
                             Xác minh và Đăng nhập
                         </button>
 <div class="text-center">
@@ -256,6 +277,26 @@
 <img class="w-80 h-auto grayscale opacity-50" data-alt="A sophisticated and subtle medical-themed digital illustration showing interconnected health data nodes and DNA helices in a clean corporate style. The artwork uses a palette of Clinical Blue and soft Teal with professional minimalist lines, reinforcing a sense of technological precision and healthcare security. High-key lighting ensures it remains an atmospheric background element without distracting from the UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBqC4lCoS2mEcDySeYn3p8t7HfgDP4z71N0mYW8DvroRBqBnXWrKfLQXg76CUyqCuvrdHYL3xx3QdU3dKzlrTS7Sp3S57LRrBDybcJF2f6gHkRC45RNla258fqCbBAuCd9pqkDvl-RqA8BlAkGZLfFXggXNRW7Fw6n7Glz52rishKZCuotp8bWyE2PAmZatuQiV0vbG-7Xl1K1xlj81Qjt_AuLiZ71uxN6tiTygRXULU1iRFJdP6Fs2GrOTXhpo4KeKGhdqMgvZu71"/>
 </div>
 <script>
+        const ROLE_PAGES = {
+            patient: 'patient_dashboard.html',
+            doctor: 'doctor_dashboard.html',
+            admin: 'admin_dashboard.html',
+        };
+
+        let selectedRole = 'patient';
+
+        function setSelectedRole(role) {
+            selectedRole = role;
+            document.querySelectorAll('.role-card').forEach((card) => {
+                const isActive = card.dataset.role === role;
+                card.classList.toggle('selected', isActive);
+                card.classList.toggle('border-primary', isActive);
+                card.classList.toggle('bg-primary/5', isActive);
+                card.classList.toggle('border-outline-variant', !isActive);
+                card.classList.toggle('bg-surface', !isActive);
+            });
+        }
+
         function showMfaSelection() {
             document.getElementById('login-view').classList.add('hidden');
             document.getElementById('mfa-selection-view').classList.remove('hidden');
@@ -286,6 +327,12 @@
             }, 100);
         }
 
+        function verifyAndRedirect() {
+            const target = ROLE_PAGES[selectedRole] || ROLE_PAGES.patient;
+            localStorage.setItem('smartcare_role', selectedRole);
+            window.location.href = target;
+        }
+
         // Auto-advance OTP inputs
         const otpInputs = document.querySelectorAll('.otp-input');
         otpInputs.forEach((input, index) => {
@@ -300,5 +347,16 @@
                 }
             });
         });
+
+        document.querySelectorAll('.role-card').forEach((button) => {
+            button.addEventListener('click', () => setSelectedRole(button.dataset.role));
+        });
+
+        const roleFromQuery = new URLSearchParams(window.location.search).get('role');
+        if (roleFromQuery && ROLE_PAGES[roleFromQuery]) {
+            setSelectedRole(roleFromQuery);
+        } else {
+            setSelectedRole('patient');
+        }
     </script>
 </body></html>
